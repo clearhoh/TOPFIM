@@ -45,13 +45,13 @@ def reponse(*, code, message, TimeElasped='0', data: Union[list, dict, str] = ''
 
 class BaseSection(object):
     def breadth(self, h: float):
-        raise NotImplementedError('breadth 方法必须被重写')
+        raise NotImplementedError('breadth')
 
     def area(self, h: float):
-        raise NotImplementedError('area 方法必须被重写')
+        raise NotImplementedError('area')
 
     def perimeter(self, h: float):
-        raise NotImplementedError('perimeter 方法必须被重写')
+        raise NotImplementedError('perimeter')
 
     def radius(self, h: float):
         return self.area(h) / self.perimeter(h)
@@ -59,15 +59,15 @@ class BaseSection(object):
     def element(self, h: float):
         return {
             'h': h,
-            'B': self.breadth(h),  # 水面宽
-            'A': self.area(h),  # 过水断面面积
-            'X': self.perimeter(h),  # 湿周
-            'R': self.radius(h),  # 水力半径
+            'B': self.breadth(h), 
+            'A': self.area(h),  
+            'X': self.perimeter(h),  
+            'R': self.radius(h), 
         }
 
     def manning(self, h: float, n: float, j: float):
         if not hasattr(self, 'element'):
-            raise NotImplementedError('element 方法必须被定义')
+            raise NotImplementedError('element')
         element = self.element(h)
         R = element.get("R")
         A = element.get("A")
@@ -613,14 +613,14 @@ def DTFV_Curve(HAND, HAN_num, NoData, DT_num):
 
 
 def s_cal(DEM, river, cellsize, NoData):
-    river_idx = list(np.unique(river))  # 去除重复值，按大小排序，第一位为NoData：0需删掉
-    idx_list = list(map(int, river_idx[1:]))  # 河段编号
+    river_idx = list(np.unique(river))  
+    idx_list = list(map(int, river_idx[1:]))  
     S_list = []
     river_length_list = []
 
     for idx in idx_list:
-        river_idx = filterate_river(river, idx)  # 提取仅有该段的河网
-        river_point_sd = get_RiverPoint(river_idx, NoData)  # 河段栅格编号
+        river_idx = filterate_river(river, idx)  
+        river_point_sd = get_RiverPoint(river_idx, NoData)  
         river_length = len(river_point_sd) * cellsize
         river_length_list.append(river_length)
         # S_list.append(abs(DEM[river_point_sd[0]] - DEM[river_point_sd[-1]])/river_length)
@@ -638,8 +638,8 @@ def s_cal(DEM, river, cellsize, NoData):
 
 def SD_Curve(HAND, HAN_num, NoData, DT_num, S_list, cellsize, slp, n, seg_length_list):
     print('SD Curve...')
-    river_idx = list(np.unique(HAN_num))  # 去除重复值，按大小排序，第一位为NoData：0需删掉
-    idx_list = list(map(int, river_idx[1:]))  # 河段编号
+    river_idx = list(np.unique(HAN_num))  
+    idx_list = list(map(int, river_idx[1:]))  
     SD_row, SD_col = len(idx_list), DT_num
     SD_list = np.zeros((SD_row, SD_col))
     By_list = np.zeros((SD_row, SD_col))
@@ -657,7 +657,7 @@ def SD_Curve(HAND, HAN_num, NoData, DT_num, S_list, cellsize, slp, n, seg_length
 
         for i in range(row):
             for j in range(col):
-                if flood_level[i, j] != 0:  # 淹没区
+                if flood_level[i, j] != 0:  
                     By_list[int(HAN_num[i, j] - 1), DT] += cellsize * cellsize * ((1 + (slp[i, j] ** 2)) ** 0.5)
                     Vy_list[int(HAN_num[i, j] - 1), DT] += (flood_level[i, j] * cellsize * cellsize)
     R_y = Vy_list / By_list
@@ -751,7 +751,7 @@ def search_near_grid(river_point_list, river, NoData):
             aim_coor_list.append(aim_coor)
             if len(river_point_list_old) == 0:
                 break
-        elif len(near_point_list) > 1:  # 最近栅格数量大于1，下一次搜索起点为据上次起点最远的栅格
+        elif len(near_point_list) > 1:  
             aim_coor = get_max(near_point_list, aim_coor)
             aim_coor_list.append(aim_coor)
             near_point_list.remove(aim_coor)
@@ -848,7 +848,7 @@ def catchment_volume(HAN_num, flood_extent_matrix, idx_list, NoData):
 def linear_interpolation(x, x_values, y_values):
     n = len(x_values)
     if n != len(y_values):
-        raise ValueError("x_values 和 y_values 的长度必须相等")
+        raise ValueError("x_values 和 y_values")
 
     i = 0
     while i < n and x_values[i] < x:
@@ -877,7 +877,7 @@ def array2tif(tif_path, tif_output_path, output_array, NoData=-9999, output_type
     GetProjection = dataset_tif.GetProjection()
     driver = gdal.GetDriverByName('GTiff')
     row, col = output_array.shape
-    dst_ds = driver.Create(tif_output_path, col, row, 1, output_type)  # 创建数据集
+    dst_ds = driver.Create(tif_output_path, col, row, 1, output_type)  
     dst_ds.SetGeoTransform(GeoTransform)
     dst_ds.SetProjection(GetProjection)
     dst_ds.GetRasterBand(1).WriteArray(output_array)
